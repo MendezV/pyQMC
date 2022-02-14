@@ -10,23 +10,51 @@ class Btau_s:
         self.gamma=gamma
         self.sigma=sigma
 
-        At=self.Amat()
-        self.Bs=self.genB(At)
+        self.At=self.Amat()
+        self.Bs=self.genB()
+
+        self.At_inv=self.Amat_inv()
+        self.Bs_inv=self.genB_inv()
+
 
     def Amat(self):
         A=[]
         for tau in range(self.gamma.Ntau):
-            A.append(np.exp(self.sigma*self.hV.alpha*self.gamma.fields[tau,:])) #has to be changed for different interactions
+            A.append(np.exp( (self.sigma*self.hV.alpha)*(self.gamma.fields[tau,:]) )) #has to be changed for different interactions
         return A
 
-    def genB(self,At):
+    def genB(self):
         B=[]
         for tau in range(self.gamma.Ntau):
-            Bta=(At[tau]*((self.ht.expTmu).T)).T
+            Bta=(self.At[tau]*((self.ht.expTmu).T)).T
             # Bta=np.diag(At[tau])@self.ht.expTmu Slower way scales worse
             B.append(Bta)
 
         return B
+    
+    def Amat_inv(self):
+        A=[]
+        for tau in range(self.gamma.Ntau):
+            A.append(np.exp(-self.sigma*self.hV.alpha*self.gamma.fields[tau,:])) #has to be changed for different interactions
+        return A
+
+    def genB_inv(self):
+        B=[]
+        for tau in range(self.gamma.Ntau):
+            Bta=self.At_inv[tau]*((self.ht.expTmuinv))
+            B.append(Bta)
+
+        return B
+
+    def flip_field_update_B(self, tau, site):
+        self.gamma.flipfield(tau, site)
+        
+        self.At[tau][site]=np.exp(self.sigma*self.hV.alpha*self.gamma.fields[tau,site])
+        self.At_inv[tau][site]=np.exp(-self.sigma*self.hV.alpha*self.gamma.fields[tau,site])
+            
+        self.Bs[tau]=(self.At[tau]*((self.ht.expTmu).T)).T
+        self.Bs_inv[tau]=self.At_inv[tau]*((self.ht.expTmuinv))
+        return None
 
 def main()->int:
     Nsites=4
@@ -39,7 +67,9 @@ def main()->int:
     gamma=Auxfield.AuxField(Ntau,Nsites)
     Bp=Btau_s(ht, hv, gamma, 1)
     Bm=Btau_s(ht, hv, gamma, -1)
-    print(Bp.Bs)
+    print(Bp.gamma.fields)
+    Bp.flip_field_update_B(1,0)
+    print(Bp.Bs[1]@Bp.Bs_inv[1])
     return 0
 
 if __name__=='__main__':

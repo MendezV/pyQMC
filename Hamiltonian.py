@@ -11,8 +11,14 @@ class Hopping:
         self.dtau=dtau
         self.mu=mu
         self.T=self.genT(Nsites)
+        
+        #exp of the hopping matrices
         self.expT=self.expTf(dtau)
         self.expTmu=np.exp(dtau*mu)*self.expT
+
+        #inverses
+        self.expTinv=self.expTf(-dtau)
+        self.expTmuinv=np.exp(-dtau*mu)*self.expTinv
     
     def genT(self,Nsites):
         vecinit=np.zeros(Nsites)
@@ -23,6 +29,7 @@ class Hopping:
     def expTf(self,dtau):
         [lam,V]=eigh(self.T)
         return V@(np.diag(np.exp(dtau*lam))@V.T)
+    
 
 class Vint:
 

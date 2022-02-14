@@ -29,11 +29,7 @@ class Geq:
             B1=self.stringops.Opmult_stab_LtoR(tau,0)
             B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau)
             BB=B1@B2
-            a2= np.eye(4)+np.reshape(np.arange(16),[4,4])
-            # print(np.min( np.abs(eigvals(a2))) )
-            print(np.mean(np.abs(self.inver_IpB(a2)-self.naive_inver_IpB(a2))))
-
-            Glist.append(BB)
+            Glist.append(self.inver_IpB(BB))
         return Glist
 
 
