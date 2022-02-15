@@ -5,10 +5,11 @@ import sys
 import Propagators
 import Hamiltonian
 import Auxfield
-import stab
 import time
 class Geq:
+
     def __init__(self, stringops ):
+
         self.stringops=stringops
         self.Glist=self.construct_G()
 
@@ -22,16 +23,43 @@ class Geq:
         nainv=inv(np.eye(np.shape(BB)[0])+BB)
         return nainv 
 
+    def construct_G_tau(self,tau):
+
+        Ntau=self.stringops.gamma.Ntau
+        B1=self.stringops.Opmult_stab_LtoR(tau,0)
+        B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau+1)
+        BB=B1@B2
+
+        return self.inver_IpB(BB)
+
+    def AdvanceG(self, tau, steps, Gtau):
+        Ntau=self.stringops.gamma.Ntau
+        init=int((tau+1)%Ntau)
+        fini=int((tau+1+steps)%Ntau)
+        Gtau_ad=Gtau
+        for t in range(init,fini):
+            Gtau_ad=self.stringops.Bs[t]@(Gtau_ad@self.stringops.Bs_inv[t])
+
+        return Gtau_ad
+
     def construct_G(self):
         Glist=[]
-        Ntau=self.stringops.Ops.gamma.Ntau
-        for tau in range(Ntau):
-            B1=self.stringops.Opmult_stab_LtoR(tau,0)
-            B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau)
-            BB=B1@B2
-            Glist.append(self.inver_IpB(BB))
+        for tau in range(self.stringops.gamma.Ntau):
+            Glist.append(self.construct_G_tau(tau))
         return Glist
 
+    def Ratio(self, tau, site ):
+        x_new=self.stringops.gamma.propose_field( tau, site)
+        x_old=self.stringops.gamma.fields[tau,site]
+        alpha=self.stringops.hV.alpha
+        Delta=np.exp(alpha*(x_new-x_old))-1
+        Ratio=1+Delta*(1-self.Glist[tau][site,site])
+        return Ratio,Delta
+
+    def update_G_tau(self,tau,site, Ratio,Delta):
+        modG=(Delta/Ratio)*np.outer(self.Glist[tau][:,site],self.Glist[tau][site,:])
+        self.Glist[tau]=self.Glist[tau]-modG
+        return None
 
 
 
@@ -49,13 +77,12 @@ def main()->int:
     ht=Hamiltonian.Hopping(Nsites,dtau,mu)
     hv=Hamiltonian.Vint(dtau,U)
     gamma=Auxfield.AuxField(Ntau,Nsites)
-    Bp=Propagators.Btau_s(ht, hv, gamma, 1)
+    Bp=Propagators.Btau_s(ht, hv, gamma, 1, Nwrap)
     # Bm=Propagators.Btau_s(ht, hv, gamma, -1)
 
-    Bsp=stab.StringOps(Bp,Nwrap)
     
     s=time.time()
-    Geqp=Geq(Bsp)
+    Geqp=Geq(Bp)
     e=time.time()
     print(e-s)
 

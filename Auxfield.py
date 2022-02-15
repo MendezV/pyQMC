@@ -17,6 +17,11 @@ class AuxField:
         self.fields[tau,site]=-self.fields[tau,site]
         return None
 
+    def propose_field(self, tau, site):
+        # the structure will be of Ntau x Nsites, where Ntau are rows
+        
+        return -self.fields[tau,site]
+
 
 
 def main()->int:
