@@ -1,10 +1,12 @@
 import numpy as np
+import Obs_eq
 
 
 def MC_step(Geq_pl,Geq_min):
 
     Ntau=Geq_pl.stringops.gamma.Ntau
     Nsites=Geq_pl.stringops.gamma.Nsites
+    Obs_store=[]
     for tau in range(Ntau):
         if tau%Geq_pl.stringops.Nwrap==0:
             Geq_pl.Glist[tau]=Geq_pl.construct_G_tau(tau)
@@ -22,4 +24,8 @@ def MC_step(Geq_pl,Geq_min):
         indtau=int((tau+1)%Ntau)
         Geq_pl.Glist[indtau]=Geq_pl.AdvanceG(tau, 1, Geq_pl.Glist[tau])
         Geq_min.Glist[indtau]=Geq_min.AdvanceG(tau, 1, Geq_min.Glist[tau])
+
+        Obs_store.append(Obs_eq.Measure_ZZ(Geq_pl, Geq_min,tau))
+    
+    return np.sum(Obs_store, axis=0)/(Nsites*Ntau)
        
