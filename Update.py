@@ -1,3 +1,4 @@
+#6
 import numpy as np
 import Obs_eq
 
@@ -25,7 +26,8 @@ def MC_step(Geq_pl,Geq_min):
         Geq_pl.Glist[indtau]=Geq_pl.AdvanceG(tau, 1, Geq_pl.Glist[tau])
         Geq_min.Glist[indtau]=Geq_min.AdvanceG(tau, 1, Geq_min.Glist[tau])
 
-        Obs_store.append(Obs_eq.Measure_ZZ(Geq_pl, Geq_min,tau))
+        # Obs_store.append(Obs_eq.Measure_ZZ(Geq_pl, Geq_min,tau))
+        Obs_store.append(Obs_eq.Measure_Etot(Geq_pl, Geq_min,tau))
     
-    return np.sum(Obs_store, axis=0)/(Nsites*Ntau)
+    return np.sum(Obs_store, axis=0)/Ntau
        

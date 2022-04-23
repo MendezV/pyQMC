@@ -1,3 +1,4 @@
+#3
 import numpy as np
 from scipy.linalg import svd
 import Hamiltonian
@@ -5,9 +6,9 @@ import Auxfield
 import sys
 import time
 class Btau_s:
-    def __init__(self, ht, hv, gamma, sigma, Nwrap ):
+    def __init__(self, ht, hV, gamma, sigma, Nwrap ):
         self.ht=ht
-        self.hV=hv
+        self.hV=hV
         self.gamma=gamma
         self.sigma=sigma
         self.Nwrap=Nwrap
@@ -34,6 +35,15 @@ class Btau_s:
 
         return B
     
+    def genB_debug(self):
+        B=[]
+        paulix=2*np.array([[0,1],[1,0]])
+        for _ in range(self.gamma.Ntau):
+            Bta=paulix
+            B.append(Bta)
+
+        return B
+    
     def Amat_inv(self):
         A=[]
         for tau in range(self.gamma.Ntau):
@@ -44,6 +54,15 @@ class Btau_s:
         B=[]
         for tau in range(self.gamma.Ntau):
             Bta=self.At_inv[tau]*((self.ht.expTmuinv))
+            B.append(Bta)
+
+        return B
+    
+    def genB_inv_debug(self):
+        B=[]
+        paulix=np.array([[0,1],[1,0]])/2
+        for _ in range(self.gamma.Ntau):
+            Bta=paulix
             B.append(Bta)
 
         return B
@@ -61,6 +80,7 @@ class Btau_s:
 
     #stable matrix multiplication methods
     def stabmult_svd(self,A,B):
+        #returns stable multiplication of A@B
         [U,D,V]=svd(B)
         temp=(A@U)*D
         [Up,Dp,Vp]=svd(temp)
@@ -69,14 +89,14 @@ class Btau_s:
         return UpDp@VpV
 
         
-    def Opmult_stab_LtoR(self, in_tau, fin_tau):
+    def Opmult_stab_LtoR(self, fin_tau, in_tau ): #second argument is rightmost index, first argument is leftmost index
+        #returns B_fin_tau@ ... @B_in_tau
+        #multiplies from left to right
+        #order of matrices is from right to left ascending
         
         if in_tau<fin_tau:
             intau=in_tau
-            fintau=fin_tau
-        elif(in_tau>fin_tau):
-            intau=fin_tau
-            fintau=in_tau
+            fintau=fin_tau+1 #to make for loops inclusive below
         else:
             return self.Bs[in_tau]
 
@@ -91,6 +111,7 @@ class Btau_s:
         residue=tautot%self.Nwrap
 
         #multiplication of the Nwrap groups
+        c=1 #starts with one to count the number of matrices instead of the number of multiplications
         for group in range(0,groups):
 
             temp_ind=intau+(group)*self.Nwrap
@@ -113,16 +134,38 @@ class Btau_s:
 
             for tau in range(temp_ind+1,temp_ind+residue):  
                     temp_prod=self.Bs[tau]@temp_prod
+                    c=c+1
             Res=self.stabmult_svd(temp_prod,Res)
 
         return Res
                         
+    def Opmult_LtoR(self, fin_tau,in_tau):
+            
+        if in_tau<fin_tau:
+            intau=in_tau
+            fintau=fin_tau
+        else:
+            return self.Bs[in_tau]
+        c=1
+        #initializing matrix that stores the result of the mult
+        shape_mat=np.shape(self.Bs[intau])
+        Res=np.eye(shape_mat[0])
         
+        temp_prod=self.Bs[in_tau]
+        tautot=fintau-intau+1
+
+        for tau in range(intau+1,fintau+1):
+            temp_prod=self.Bs[tau]@temp_prod
+            c=c+1
+
+        return temp_prod
+                        
 
 def main()->int:
-    Nsites=4
-    Ntau=20
-    Nwrap=10 #Nwrap-1 is the number of matrix multiplications that are stable. Mult of Nwrap matrices
+    np.random.seed(10)
+    Nsites=2
+    Ntau=4
+    Nwrap=2 #Nwrap-1 is the number of matrix multiplications that are stable. Mult of Nwrap matrices
     dtau=0.01
     mu=0
     U=1
@@ -131,12 +174,20 @@ def main()->int:
     gamma=Auxfield.AuxField(Ntau,Nsites)
     Bp=Btau_s(ht, hv, gamma, 1, Nwrap)
     Bm=Btau_s(ht, hv, gamma, -1, Nwrap)
-    print(Bp.gamma.fields)
-    print("\n")
-    Bp.flip_field_update_B(1,0)
-    print(Bp.gamma.fields)
-    print(Bp.Bs[1]@Bp.Bs_inv[1])
+    
+    # # print(Bp.gamma.fields)
+    # print(Bp.Bs)
+    # print("\n")
+    # Bp.flip_field_update_B(1,0)
+    # # print(Bp.gamma.fields)
+    # print(Bp.Bs[1]@Bp.Bs_inv[1])
+    # print(Bp.Bs)
+    
+    print("nostab \n",Bp.Opmult_LtoR(Ntau-1,0))
+    print("stab \n",Bm.Opmult_stab_LtoR(Ntau-1,0))
     return 0
+
+    
 
 if __name__=='__main__':
     sys.exit(main())

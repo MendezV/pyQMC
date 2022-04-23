@@ -1,3 +1,4 @@
+#4
 import numpy as np
 from scipy.linalg import svd
 from scipy.linalg import inv
@@ -26,8 +27,8 @@ class Geq:
     def construct_G_tau(self,tau):
 
         Ntau=self.stringops.gamma.Ntau
-        B1=self.stringops.Opmult_stab_LtoR(tau,0)
-        B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau+1)
+        B1=self.stringops.Opmult_stab_LtoR(tau-1,0) #both sides are inclusive, second argument is rightmost index, first argument is leftmost index
+        B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau) #both sides are inclusive
         BB=B1@B2
 
         return self.inver_IpB(BB)
@@ -64,6 +65,7 @@ class Geq:
 
 
 def main()->int:
+    
     Nsites=25
     Beta=5
     dtau=0.1

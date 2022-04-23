@@ -1,3 +1,4 @@
+#1
 import numpy as np
 from scipy.linalg import circulant
 from scipy.linalg import eigh
@@ -10,7 +11,8 @@ class Hopping:
         self.Nsites=Nsites
         self.dtau=dtau
         self.mu=mu
-        self.T=self.genT(Nsites)
+        self.t=-1
+        self.T=self.t*self.genT(Nsites)
         
         #exp of the hopping matrices
         self.expT=self.expTf(dtau)
@@ -34,6 +36,8 @@ class Hopping:
 class Vint:
 
     def __init__(self, dtau, U):
+        self.U=U
+        self.dtau=dtau
         self.alpha=np.arccosh(np.exp(dtau*U/2))
         
 

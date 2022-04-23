@@ -1,3 +1,4 @@
+#7
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.linalg.blas as bl
@@ -12,16 +13,31 @@ import time
 #TODO: precision checks
 #TODO: Corr as a function of distance
 
+def read_input(filename):
+    variables = {}
+
+    with open(filename) as f:
+        for line in f:
+            if line[0]!="#":
+
+                name, value = line.split("=")
+                variables[name] = float(value)
+
+    return variables
+
 def main()->int:
-    Ntau=int(sys.argv[1])
-    Nsites=int(sys.argv[2])
-    Nbins=int(sys.argv[3])
-    Nsweeps=int(sys.argv[4])
-    Nwrap=10
-    t=1
-    U=2
-    beta=0.5
-    mu=0
+    print("hos")
+    variables=read_input('parameters')
+    Ntau=int(variables["Ntau"])
+    Nsites=int(variables["Nsites"])
+    Nbins=int(variables["Nbins"])
+    Nsweeps=int(variables["Nsweeps"])
+    Nwrap=20
+    
+    t=int(variables["ham_hop"])
+    U=int(variables["ham_U"])
+    beta=int(variables["beta"])
+    mu=int(variables["ham_mu"])
     dtau=beta/Ntau
 
 
@@ -44,9 +60,11 @@ def main()->int:
     
     meanO=np.sum(Obs_store, axis=0)/(Nbins)
 
-    plt.imshow(meanO)
-    plt.colorbar()
-    plt.savefig("ZZcorr.png")
+    # plt.imshow(meanO)
+    # plt.colorbar()
+    # plt.savefig("ZZcorr.png")
+    plt.plot(Obs_store)
+    plt.show()
 
     
 
