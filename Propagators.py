@@ -97,6 +97,9 @@ class Btau_s:
         if in_tau<fin_tau:
             intau=in_tau
             fintau=fin_tau+1 #to make for loops inclusive below
+            
+        elif in_tau>fin_tau:
+            return np.eye(np.shape(self.Bs[0])[0]) #this is necessary to maintain the convention for the order of the greens function starting from index 0
         else:
             return self.Bs[in_tau]
 
@@ -163,11 +166,12 @@ def main()->int:
     np.random.seed(10)
     Nsites=2
     Ntau=4
-    Nwrap=2 #Nwrap-1 is the number of matrix multiplications that are stable. Mult of Nwrap matrices
+    Nwrap=10 #Nwrap-1 is the number of matrix multiplications that are stable. Mult of Nwrap matrices
     dtau=0.01
     mu=0
     U=1
-    ht=Hamiltonian.Hopping(Nsites,dtau,mu)
+    t=-1
+    ht=Hamiltonian.Hopping(Nsites,dtau,mu,t)
     hv=Hamiltonian.Vint(dtau,U)
     gamma=Auxfield.AuxField(Ntau,Nsites)
     Bp=Btau_s(ht, hv, gamma, 1, Nwrap)

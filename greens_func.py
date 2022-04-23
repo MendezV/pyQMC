@@ -27,20 +27,24 @@ class Geq:
     def construct_G_tau(self,tau):
 
         Ntau=self.stringops.gamma.Ntau
-        B1=self.stringops.Opmult_stab_LtoR(tau-1,0) #both sides are inclusive, second argument is rightmost index, first argument is leftmost index
-        B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau) #both sides are inclusive
+        B1=self.stringops.Opmult_stab_LtoR(tau,0) #both sides are inclusive, second argument is rightmost index, first argument is leftmost index
+        B2=self.stringops.Opmult_stab_LtoR(Ntau-1,tau+1) #both sides are inclusive
         BB=B1@B2
 
         return self.inver_IpB(BB)
 
-    def AdvanceG(self, tau, steps, Gtau):
+    def AdvanceG_multistep(self, tau, steps, Gtau):
         Ntau=self.stringops.gamma.Ntau
-        init=int((tau+1)%Ntau)
-        fini=int((tau+1+steps)%Ntau)
+        init=int((tau)%Ntau)
+        fini=int((tau+steps)%Ntau)
         Gtau_ad=Gtau
         for t in range(init,fini):
+            print("i advanced ", t)
             Gtau_ad=self.stringops.Bs[t]@(Gtau_ad@self.stringops.Bs_inv[t])
-
+        return Gtau_ad
+    
+    def AdvanceG(self, tau, steps, Gtau):
+        Gtau_ad=self.stringops.Bs[tau]@(Gtau@self.stringops.Bs_inv[tau])
         return Gtau_ad
 
     def construct_G(self):
@@ -75,8 +79,9 @@ def main()->int:
     Nwrap=10
     mu=0
     U=4
+    t=-1
     np.random.seed(1)
-    ht=Hamiltonian.Hopping(Nsites,dtau,mu)
+    ht=Hamiltonian.Hopping(Nsites,dtau,mu,t)
     hv=Hamiltonian.Vint(dtau,U)
     gamma=Auxfield.AuxField(Ntau,Nsites)
     Bp=Propagators.Btau_s(ht, hv, gamma, 1, Nwrap)

@@ -32,34 +32,36 @@ def main()->int:
     Nsites=int(variables["Nsites"])
     Nbins=int(variables["Nbins"])
     Nsweeps=int(variables["Nsweeps"])
-    Nwrap=20
+    Nskip=int(variables["Nskip"])
+    Nwrap=2
     
-    t=int(variables["ham_hop"])
-    U=int(variables["ham_U"])
-    beta=int(variables["beta"])
-    mu=int(variables["ham_mu"])
+    t=float(variables["ham_hop"])
+    U=float(variables["ham_U"])
+    beta=float(variables["beta"])
+    mu=float(variables["ham_mu"])
     dtau=beta/Ntau
 
 
     #initializing
     np.random.seed(1)
-    ht=Hamiltonian.Hopping(Nsites,dtau,mu)
+    ht=Hamiltonian.Hopping(Nsites,dtau,mu,t)
     hv=Hamiltonian.Vint(dtau,U)
     gamma=Auxfield.AuxField(Ntau,Nsites)
     Bp=Propagators.Btau_s(ht, hv, gamma, 1, Nwrap)
     Bm=Propagators.Btau_s(ht, hv, gamma, -1, Nwrap)
     Geq_pl=greens_func.Geq(Bp)
     Geq_min=greens_func.Geq(Bm)
+    sim=Update.Simulation(Geq_pl,Geq_min, Nsweeps)
 
     Obs_store=[]
-    for _ in range(Nbins):
+    for bin in range(Nbins):
         Obs_store_sweep=[]
-        for _ in range(Nsweeps):
-            Obs_store_sweep.append(Update.MC_step(Geq_pl,Geq_min))
+        print('bin', bin)
+        sim.MC_step(Obs_store_sweep)
         Obs_store.append(np.sum(Obs_store_sweep, axis=0)/(Nsweeps))   
     
-    meanO=np.sum(Obs_store, axis=0)/(Nbins)
-
+    meanO=np.sum(Obs_store[Nskip:], axis=0)/(Nbins-Nskip)
+    print('meanop', meanO, np.size(Obs_store[Nskip:]),(Nbins-Nskip))
     # plt.imshow(meanO)
     # plt.colorbar()
     # plt.savefig("ZZcorr.png")

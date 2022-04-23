@@ -6,12 +6,12 @@ import Auxfield
 import sys
 class Hopping:
 
-    def __init__(self,Nsites,dtau,mu):
+    def __init__(self,Nsites,dtau,mu,t):
 
         self.Nsites=Nsites
         self.dtau=dtau
         self.mu=mu
-        self.t=-1
+        self.t=t
         self.T=self.t*self.genT(Nsites)
         
         #exp of the hopping matrices
@@ -45,7 +45,8 @@ def main()->int:
     Nsites=4
     dtau=0.01
     mu=0
-    ht=Hopping(Nsites,dtau,mu)
+    t=1
+    ht=Hopping(Nsites,dtau,mu, t)
     
     return 0
 

@@ -1,14 +1,15 @@
 #####################
 #   Var QMC
 #####################
-Ntau=400
+Ntau=80
 Nsites=6
-Nbins=50
-Nsweeps=20
+Nbins=10
+Nsweeps=10
+Nskip=5
 #####################
 #   Model
 #####################
-ham_hop=1
-ham_U=0.0004
+ham_hop=-1
+ham_U=0.000
 beta=4
 ham_mu=0

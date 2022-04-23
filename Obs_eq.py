@@ -34,8 +34,8 @@ def Measure_U_op(Geq_pl, Geq_min,tau):
     return U*np.sum(niupnidown)
 
 def Measure_T_op(Geq_pl, Geq_min,tau):
-    Nsites=Geq_pl.stringops.gamma.Nsites
     
+    Nsites=Geq_pl.stringops.gamma.Nsites
     Gpl=Geq_pl.Glist[tau]
     Tpl=Geq_pl.stringops.ht.T
     Gmin=Geq_min.Glist[tau]
@@ -44,7 +44,6 @@ def Measure_T_op(Geq_pl, Geq_min,tau):
     hopmat=(np.eye(Nsites)-Gpl.T)*Tpl+(np.eye(Nsites)-Gmin.T)*Tmin
     
     t=Geq_min.stringops.ht.t
-    
     return t*np.sum(hopmat)
 
 def Measure_Etot(Geq_pl, Geq_min,tau):
@@ -52,5 +51,5 @@ def Measure_Etot(Geq_pl, Geq_min,tau):
     T=Measure_T_op(Geq_pl, Geq_min,tau)
     U=Measure_U_op(Geq_pl, Geq_min,tau)
     
-    print(T+U)
+    print(T,U)
     return T
