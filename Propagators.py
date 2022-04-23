@@ -111,7 +111,6 @@ class Btau_s:
         residue=tautot%self.Nwrap
 
         #multiplication of the Nwrap groups
-        c=1 #starts with one to count the number of matrices instead of the number of multiplications
         for group in range(0,groups):
 
             temp_ind=intau+(group)*self.Nwrap
@@ -134,7 +133,6 @@ class Btau_s:
 
             for tau in range(temp_ind+1,temp_ind+residue):  
                     temp_prod=self.Bs[tau]@temp_prod
-                    c=c+1
             Res=self.stabmult_svd(temp_prod,Res)
 
         return Res
